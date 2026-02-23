@@ -1,0 +1,11 @@
+{
+  "name": "Airbnb Swift Style Guide",
+  "description": "Enforces the Airbnb iOS Swift Style Guide — reviews, lints, and rewrites Swift code to match Airbnb's naming, formatting, and pattern conventions.",
+  "version": "1.0.0",
+  "skills": [
+    "airbnb-swift-style"
+  ],
+  "author": "Cassie Wallace",
+  "homepage": "https://github.com/airbnb/swift",
+  "license": "MIT"
+}
