@@ -1,6 +1,6 @@
 # Airbnb Swift Style Guide Agent Skill
 
-Expert enforcement of the [Airbnb iOS Swift Style Guide](https://github.com/airbnb/swift) for any AI coding tool that supports the [Agent Skills open format](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill).
+Enforcement of the [Airbnb iOS Swift Style Guide](https://github.com/airbnb/swift) for any AI coding tool that supports the [Agent Skills open format](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill).
 
 ---
 
