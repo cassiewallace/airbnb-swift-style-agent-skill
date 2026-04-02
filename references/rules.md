@@ -396,7 +396,32 @@ Extract sub-views or `@ViewBuilder` methods when `body` grows complex.
 ### 8.2 Previews
 Include a `#Preview` for every view. Use realistic data.
 
-### 8.3 Property Wrappers
+### 8.3 Omit Redundant `EmptyView` Branches
+An `if` statement without an `else` branch implicitly produces no content when the condition is false, so an explicit `else { EmptyView() }` is redundant and should be removed.
+
+**✅ Correct:**
+```swift
+var body: some View {
+  if condition {
+    Text("Launch")
+  }
+}
+```
+
+**❌ Incorrect:**
+```swift
+var body: some View {
+  if condition {
+    Text("Launch")
+  } else {
+    EmptyView()
+  }
+}
+```
+
+*Enforced by:* SwiftFormat `redundantEmptyView` rule.
+
+### 8.4 Property Wrappers
 
 | Wrapper | Use when |
 |---------|---------|
@@ -407,6 +432,8 @@ Include a `#Preview` for every view. Use realistic data.
 | `@EnvironmentObject` | Shared dependency injected via environment |
 
 Do not use `@State` for data that outlives the view.
+
+---
 
 ---
 
@@ -437,6 +464,86 @@ No `if`, `for`, or `switch` inside test methods. Use separate test methods or a 
 
 ### 9.4 One Concept Per Test
 Multiple `XCTAssert` calls are fine as long as they all belong to the same behavior.
+
+### 9.5 Swift Testing: Raw Identifiers for Test Function Names
+When using Swift Testing, name test functions using **raw identifiers** (backtick-wrapped, space-separated words) instead of camelCase. Never put display names inside the `@Test` macro. Suite type names use regular UpperCamelCase.
+
+**✅ Correct:**
+```swift
+struct SpaceshipTests {
+  @Test
+  func `warp drive enables FTL travel`() { ... }
+
+  @Test
+  func `launch fails when fuel is empty`() { ... }
+}
+```
+
+**❌ Incorrect:**
+```swift
+// camelCase function name
+@Test func testWarpDriveEnablesFTLTravel() { ... }
+
+// Display name string in macro
+@Test("Warp drive enables FTL travel")
+func warpDriveEnablesFTLTravel() { ... }
+
+// Raw identifier on suite type
+struct `Spaceship tests` { ... }
+```
+
+*Requires:* Swift SE-0451 raw identifiers (available in Swift 6+).
+
+### 9.6 Swift Testing: Omit Redundant `@Suite` Macro
+Do not annotate a test suite with `@Suite` unless you are passing arguments (e.g., `.serialized`). The macro with no arguments is redundant — `@Test` discovery works the same without it.
+
+**✅ Correct:**
+```swift
+struct SpaceshipTests {
+  @Test
+  func `warp drive enables FTL travel`() { ... }
+}
+
+// @Suite with arguments is fine
+@Suite(.serialized)
+struct SpaceshipIntegrationTests {
+  @Test
+  func `launch sequence completes`() { ... }
+}
+```
+
+**❌ Incorrect:**
+```swift
+@Suite                        // no arguments — redundant
+struct SpaceshipTests {
+  @Test
+  func `warp drive enables FTL travel`() { ... }
+}
+```
+
+### 9.7 Swift Testing: Avoid Redundant `#expect` Messages
+Do not pass a message string to `#expect` when it merely restates the condition. The macro already generates detailed failure output. Only add a message when it provides genuinely new context; a code comment is often better.
+
+**✅ Correct:**
+```swift
+// No message — the macro output is sufficient
+#expect(spaceship.isWarpDriveActive)
+#expect(spaceship.speed > lightSpeed)
+
+// Contextual message that adds new information
+#expect(spaceship.speed > lightSpeed,
+  "Spaceship must reach light speed before warp bubble forms")
+
+// Or use a comment instead
+// Spaceship must reach light speed before warp bubble forms
+#expect(spaceship.speed > lightSpeed)
+```
+
+**❌ Incorrect:**
+```swift
+#expect(spaceship.isWarpDriveActive, "Warp drive should be active")
+#expect(spaceship.speed > lightSpeed, "Speed should be greater than light speed")
+```
 
 ---
 

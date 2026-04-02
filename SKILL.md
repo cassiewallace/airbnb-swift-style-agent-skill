@@ -86,6 +86,10 @@ These are the most commonly violated rules — always check these first:
 | Patterns   | Use `guard` for early exit |
 | Patterns   | Most restrictive access control that still works |
 | Patterns   | No force-unwrap (`!`) except in tests or documented invariants |
+| SwiftUI    | Omit `else { EmptyView() }` — plain `if` is equivalent |
+| Testing    | Swift Testing: use raw identifier names (`` `my test case`() ``), not camelCase |
+| Testing    | Swift Testing: omit `@Suite` when no arguments are passed |
+| Testing    | Swift Testing: don't pass `#expect` messages that restate the condition |
 
 ## Reference files
 
