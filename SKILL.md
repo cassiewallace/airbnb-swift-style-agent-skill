@@ -86,6 +86,21 @@ These are the most commonly violated rules — always check these first:
 | Patterns   | Use `guard` for early exit |
 | Patterns   | Most restrictive access control that still works |
 | Patterns   | No force-unwrap (`!`) except in tests or documented invariants |
+| Style      | Trailing commas in multi-line collections |
+| Style      | No spaces inside collection literal brackets |
+| Style      | Name all tuple members |
+| Style      | Single-line `//` comments only — no `/* */` block comments |
+| Style      | Doc comments use `///`, not `//` |
+| Style      | Attributes on their own line (except simple stored-property wrappers) |
+| Style      | Omit `internal` — it's the default |
+| Style      | `Void` not `()` in closure return types |
+| Style      | Commas instead of `&&` in `if`/`guard` conditions |
+| Patterns   | `private` over `fileprivate`; `public` over `open` |
+| Patterns   | Per-declaration access control in extensions (not on the extension itself) |
+| Patterns   | Caseless `enum`s for namespacing constants — not structs |
+| Patterns   | `for` loops over `forEach` (unless last in a functional chain) |
+| Patterns   | Prefer methods in types over global functions |
+| Patterns   | Mark classes `final` by default |
 | SwiftUI    | Omit `else { EmptyView() }` — plain `if` is equivalent |
 | Testing    | Swift Testing: use raw identifier names (`` `my test case`() ``), not camelCase |
 | Testing    | Swift Testing: omit `@Suite` when no arguments are passed |

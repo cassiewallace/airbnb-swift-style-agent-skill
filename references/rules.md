@@ -8,14 +8,15 @@ Source: https://github.com/airbnb/swift
 
 1. [Xcode Formatting](#1-xcode-formatting)
 2. [Naming](#2-naming)
-3. [Style — Functions](#3-style--functions)
-4. [Style — Closures](#4-style--closures)
-5. [Style — Operators](#5-style--operators)
-6. [Patterns](#6-patterns)
-7. [File Organization](#7-file-organization)
-8. [SwiftUI](#8-swiftui)
-9. [Testing](#9-testing)
-10. [Tooling: SwiftFormat & SwiftLint](#10-tooling)
+3. [Style — General](#3-style--general)
+4. [Style — Functions](#4-style--functions)
+5. [Style — Closures](#5-style--closures)
+6. [Style — Operators](#6-style--operators)
+7. [Patterns](#7-patterns)
+8. [File Organization](#8-file-organization)
+9. [SwiftUI](#9-swiftui)
+10. [Testing](#10-testing)
+11. [Tooling: SwiftFormat & SwiftLint](#11-tooling)
 
 ---
 
@@ -157,9 +158,283 @@ private var _isEnabled = true
 
 ---
 
-## 3. Style — Functions
+## 3. Style — General
 
-### 3.1 Omit `Void` Return Type
+### 3.1 Trailing Commas
+Add a trailing comma after the last element of multi-line, multi-element comma-separated lists. Omit trailing commas in single-element or single-line lists.
+
+**✅ Correct:**
+```swift
+let planets = [
+  mercury,
+  venus,
+  earth,
+  mars,
+]
+
+let map = [
+  "moon": 1,
+  "sun": 1,
+]
+```
+
+**❌ Incorrect:**
+```swift
+let planets = [
+  mercury,
+  venus,
+  earth,
+  mars   // missing trailing comma
+]
+```
+
+*Enforced by:* SwiftFormat `trailingCommas` rule.
+
+### 3.2 Collection Literal Spacing
+No spaces inside the brackets of collection literals.
+
+**✅ Correct:**
+```swift
+let objects = [mercury, venus, earth]
+let map = ["moon": 1, "sun": 1]
+```
+
+**❌ Incorrect:**
+```swift
+let objects = [ mercury, venus, earth ]
+let map = [ "moon": 1, "sun": 1 ]
+```
+
+*Enforced by:* SwiftFormat `spaceInsideBrackets` rule.
+
+### 3.3 Named Tuple Members
+Always name the members of a tuple for clarity. If a type has more than three fields, consider a struct instead.
+
+**✅ Correct:**
+```swift
+func coordinates() -> (x: Int, y: Int) {
+  return (x: 4, y: 4)
+}
+let point = coordinates()
+print(point.x)
+```
+
+**❌ Incorrect:**
+```swift
+func coordinates() -> (Int, Int) {
+  return (4, 4)
+}
+let point = coordinates()
+print(point.0)   // positional access is fragile
+```
+
+### 3.4 Colon Spacing
+Colons are always followed by a space and never preceded by a space.
+
+**✅ Correct:**
+```swift
+let planet: CelestialObject = sun
+class Planet: CelestialObject { }
+let map: [String: Int] = [:]
+```
+
+**❌ Incorrect:**
+```swift
+let planet:CelestialObject = sun
+let planet : CelestialObject = sun
+class Planet : CelestialObject { }
+```
+
+*Enforced by:* SwiftFormat `spaceAroundOperators` rule.
+
+### 3.5 Omit Unnecessary Parentheses
+Remove parentheses from conditions, switch statements, and closure parameters when they are not required by the compiler.
+
+**✅ Correct:**
+```swift
+if userCount > 0 { }
+switch planet { }
+let evens = numbers.filter { $0.isMultiple(of: 2) }
+```
+
+**❌ Incorrect:**
+```swift
+if (userCount > 0) { }
+switch (planet) { }
+let evens = numbers.filter { (number) in number.isMultiple(of: 2) }
+```
+
+*Enforced by:* SwiftFormat `redundantParens` rule.
+
+### 3.6 Single-Line Comments Over Block Comments
+Use `//` and `///` for all comments. Do not use `/* */` block comments.
+
+**✅ Correct:**
+```swift
+/// A planet in the solar system.
+class Planet {
+  // Generate atmosphere before oceans
+  func terraform() {
+    generateAtmosphere()
+    generateOceans()
+  }
+}
+```
+
+**❌ Incorrect:**
+```swift
+/**
+ * A planet in the solar system.
+ */
+class Planet {
+  /*
+    Generate atmosphere before oceans
+  */
+  func terraform() { }
+}
+```
+
+*Enforced by:* SwiftFormat `blockComments` rule.
+
+### 3.7 Doc Comments (`///`)
+Use `///` (not `//`) for documentation comments that describe declarations. Place them on the line immediately before the declaration.
+
+**✅ Correct:**
+```swift
+/// A spacecraft capable of faster-than-light travel.
+class Spaceship {
+  /// The main propulsion system.
+  var engine: Engine
+
+  /// Engages the warp drive.
+  func engage() { }
+}
+```
+
+**❌ Incorrect:**
+```swift
+// A spacecraft capable of faster-than-light travel.  // plain comment, not doc comment
+class Spaceship { }
+```
+
+*Enforced by:* SwiftFormat `docComments` rule.
+
+### 3.8 Attribute Placement
+Place attributes on the line **above** the declaration they annotate, with one exception: simple stored-property wrappers (like `@State`, `@Published`) that fit on the same line without affecting readability may stay inline.
+
+**✅ Correct:**
+```swift
+@MainActor
+class Spaceship { }
+
+@discardableResult
+public func executeRequest() -> URLSessionCancellable { }
+
+// Simple stored property wrappers may stay on the same line
+@State private var isEnabled = false
+```
+
+**❌ Incorrect:**
+```swift
+@MainActor class Spaceship { }          // attribute should be on its own line
+
+@discardableResult public func executeRequest() -> URLSessionCancellable { }
+```
+
+*Enforced by:* SwiftFormat `wrapAttributes` rule.
+
+### 3.9 Modifier Ordering
+All modifiers for a declaration appear on the **same line** as the declaration. Access control comes first.
+
+**✅ Correct:**
+```swift
+public final class Planet { }
+nonisolated public func orbit() { }
+private static let gravity = 9.8
+```
+
+**❌ Incorrect:**
+```swift
+public
+final
+class Planet { }        // each modifier on its own line
+
+static private let gravity = 9.8   // access control not first
+```
+
+*Enforced by:* SwiftFormat `modifiersOnSameLine` rule.
+
+### 3.10 Omit Explicit `internal`
+The `internal` access level is the Swift default and should never be written explicitly.
+
+**✅ Correct:**
+```swift
+class Spaceship { }
+func launch() { }
+```
+
+**❌ Incorrect:**
+```swift
+internal class Spaceship { }
+internal func launch() { }
+```
+
+*Enforced by:* SwiftFormat `redundantInternal` rule.
+
+### 3.11 Conditional Assignment Expressions
+When initializing a new property using a conditional (`if`/`switch`), prefer Swift's expression form over assigning inside separate branches.
+
+**✅ Correct:**
+```swift
+let location =
+  if let star = planet.star {
+    "System: \(star.name)"
+  } else {
+    "Rogue planet"
+  }
+
+let fuelType = switch engine {
+  case .ion: "xenon"
+  case .chemical: "liquid oxygen"
+}
+```
+
+**❌ Incorrect:**
+```swift
+var location: String
+if let star = planet.star {
+  location = "System: \(star.name)"
+} else {
+  location = "Rogue planet"
+}
+```
+
+*Enforced by:* SwiftFormat `conditionalAssignment` rule.
+
+### 3.12 Type Shorthand Syntax
+Prefer Swift shorthand syntax for standard library types.
+
+**✅ Correct:**
+```swift
+var names: [String]
+var lookup: [String: Int]
+var optional: String?
+```
+
+**❌ Incorrect:**
+```swift
+var names: Array<String>
+var lookup: Dictionary<String, Int>
+var optional: Optional<String>
+```
+
+*Enforced by:* SwiftFormat `typeSugar` rule.
+
+---
+
+## 4. Style — Functions
+
+### 4.1 Omit `Void` Return Type
 ```swift
 // ✅
 func launch() { }
@@ -168,7 +443,7 @@ func launch() { }
 func launch() -> Void { }
 ```
 
-### 3.2 Long Signatures — Break After Opening Paren
+### 4.2 Long Signatures — Break After Opening Paren
 When a function signature exceeds the line limit, break after `(` and indent each parameter by 2 spaces:
 
 ```swift
@@ -183,14 +458,27 @@ func move(
 func move(from origin: Planet, to destination: Planet, using vehicle: Spaceship) -> TravelPlan {
 ```
 
-### 3.3 Default Parameters Last
+### 4.3 Default Parameters Last
 Parameters with default values go at the **end** of the parameter list.
+
+### 4.4 Unused Parameters → `_`
+```swift
+// ✅
+something.observe { _, newValue in
+  update(newValue)
+}
+
+// ❌
+something.observe { oldValue, newValue in   // oldValue unused
+  update(newValue)
+}
+```
 
 ---
 
-## 4. Style — Closures
+## 5. Style — Closures
 
-### 4.1 Trailing Closure Syntax
+### 5.1 Trailing Closure Syntax
 Use trailing closure syntax when the closure is the last argument. Omit parentheses when it is the only argument.
 
 ```swift
@@ -207,32 +495,45 @@ UIView.animate(withDuration: 0.3, animations: {
 })
 ```
 
-### 4.2 Capture Lists
+### 5.2 `Void` in Closure Return Types
+Use `Void` (not `()`) for closure return types.
+
+```swift
+// ✅
+var completion: () -> Void
+
+// ❌
+var completion: () -> ()
+```
+
+### 5.3 Capture Lists — Prefer `weak` Over `unowned`
+Avoid `unowned` references in capture lists. Prefer `weak` to prevent crashes from dangling references.
+
 ```swift
 // ✅
 button.onTap = { [weak self] in
   self?.launch()
 }
+
+// ❌
+button.onTap = { [unowned self] in
+  self.launch()    // crashes if self is deallocated
+}
 ```
 
-### 4.3 Unused Parameters → `_`
+### 5.4 Unused Closure Parameters → `_`
 ```swift
 // ✅
 something.observe { _, newValue in
-  update(newValue)
-}
-
-// ❌
-something.observe { oldValue, newValue in   // oldValue unused
   update(newValue)
 }
 ```
 
 ---
 
-## 5. Style — Operators
+## 6. Style — Operators
 
-### 5.1 Spacing
+### 6.1 Infix Operator Spacing
 - Single space on **both sides** of binary operators
 - No space between a unary operator and its operand
 
@@ -246,11 +547,56 @@ let sum = a+b
 let sum = a +b
 ```
 
+### 6.2 Range Operators — No Spaces
+Do not add spaces around range operators (`...`, `..<`).
+
+```swift
+// ✅
+let range = 1...10
+for i in 0..<count { }
+
+// ❌
+let range = 1 ... 10
+for i in 0 ..< count { }
+```
+
+### 6.3 Ternary Operator — Wrap Before `?` and `:`
+When a ternary expression must wrap, break before `?` and before `:`.
+
+```swift
+// ✅
+let result = someCondition
+  ? valueIfTrue
+  : valueIfFalse
+
+// ❌
+let result = someCondition ?
+  valueIfTrue :
+  valueIfFalse
+```
+
+### 6.4 Use Commas Instead of `&&` in Conditions
+In `if`, `guard`, and `while` statements, separate conditions with commas rather than `&&`.
+
+```swift
+// ✅
+if let star = planet.star, star.isSun {
+  ignite()
+}
+
+guard isEnabled, userCount > 0 else { return }
+
+// ❌
+if let star = planet.star && star.isSun {
+  ignite()
+}
+```
+
 ---
 
-## 6. Patterns
+## 7. Patterns
 
-### 6.1 Omit Explicit Types When Inferable
+### 7.1 Omit Explicit Types When Inferable
 
 **✅ Correct:**
 ```swift
@@ -276,7 +622,7 @@ let names: [String] = []  // empty collection literal
 let value: Double? = nil  // nil needs a type
 ```
 
-### 6.2 No `.init` + Explicit Type (prefer constructor call directly)
+### 7.2 No `.init` + Explicit Type (prefer constructor call directly)
 
 **✅ Correct:**
 ```swift
@@ -294,7 +640,7 @@ struct SolarSystemBuilder {
 }
 ```
 
-### 6.3 Omit Redundant `self`
+### 7.3 Omit Redundant `self`
 Only use `self.` when the language **requires** it (disambiguating a parameter from a property, or capturing in a closure).
 
 **✅ Correct:**
@@ -321,11 +667,35 @@ func save() {
 }
 ```
 
-### 6.4 Access Control
+### 7.4 Access Control
 - Use the **most restrictive** access level that still works
-- Explicitly mark `private` or `fileprivate` — don't rely on internal-by-default
+- Prefer `private` over `fileprivate`
+- Prefer `public` over `open` (open allows subclassing across modules — only use when that is explicitly intended)
+- Omit `internal` — it is the default and should never be written explicitly
+- In extensions, specify access control **individually per declaration** rather than on the extension itself
 
-### 6.5 `guard` for Early Exit
+**✅ Correct:**
+```swift
+public struct Spaceship {
+  private let engine: Engine
+}
+
+extension Spaceship {
+  public func blastOff() { }
+  private func checkSystems() { }
+}
+```
+
+**❌ Incorrect:**
+```swift
+internal class Spaceship { }   // internal is implicit — omit it
+
+public extension Spaceship {
+  func blastOff() { }          // access level on extension, not per-declaration
+}
+```
+
+### 7.5 `guard` for Early Exit
 
 **✅ Correct:**
 ```swift
@@ -344,20 +714,100 @@ func launch(_ rocket: Rocket?) {
 }
 ```
 
-### 6.6 Optional Handling — No Force-Unwrap
+### 7.6 Optional Handling — No Force-Unwrap
 - Prefer `if let`, `guard let`, or optional chaining over `!`
 - Force-unwrap is acceptable only in tests or when a documented invariant makes `nil` impossible
 
-### 6.7 `Sendable` and Concurrency
+### 7.7 Caseless Enums for Namespacing
+Use caseless `enum`s (not structs or classes) to group related `public` or `internal` constants and functions into namespaces. Enums cannot be instantiated, which prevents accidental misuse.
+
+**✅ Correct:**
+```swift
+enum Environment {
+  enum Earth {
+    static let gravity = 9.8
+  }
+  enum Moon {
+    static let gravity = 1.6
+  }
+}
+```
+
+**❌ Incorrect:**
+```swift
+struct Environment {
+  static let earthGravity = 9.8   // struct can be instantiated accidentally
+  static let moonGravity = 1.6
+}
+```
+
+*Enforced by:* SwiftFormat `enumNamespaces` rule.
+
+### 7.8 Prefer `for` Loops Over `forEach`
+Use a `for` loop by default. `forEach` is acceptable only as the **last element in a functional chain**.
+
+**✅ Correct:**
+```swift
+for planet in planets {
+  planet.terraform()
+}
+
+// forEach at the end of a chain is fine
+planets
+  .filter { !$0.isGasGiant }
+  .forEach { $0.terraform() }
+```
+
+**❌ Incorrect:**
+```swift
+planets.forEach { planet in   // not at end of a chain — use for loop
+  planet.terraform()
+}
+```
+
+*Enforced by:* SwiftFormat `preferForLoop` rule.
+
+### 7.9 Avoid Global Functions
+Prefer methods defined within a type over free functions. Use type nesting or extensions to keep related behavior together.
+
+**✅ Correct:**
+```swift
+class Person {
+  var age: Int { /* calculation */ }
+  func jump() { }
+}
+```
+
+**❌ Incorrect:**
+```swift
+func age(of person: Person) -> Int { }
+func jump(person: Person) { }
+```
+
+### 7.10 `Sendable` and Concurrency
 - Prefer restructuring code so the compiler can statically verify `Sendable`
 - Use `@preconcurrency` only for APIs you don't own
 - Avoid `@unchecked Sendable`; document why if you must use it
 
+### 7.11 Prefer `final` Classes
+Mark classes `final` by default unless inheritance is explicitly required. This improves performance and communicates intent.
+
+```swift
+// ✅
+final class Spaceship { }
+
+// Only omit final when subclassing is intentional
+class Vehicle { }
+final class Spaceship: Vehicle { }
+```
+
+*Enforced by:* SwiftFormat `preferFinalClasses` rule.
+
 ---
 
-## 7. File Organization
+## 8. File Organization
 
-### 7.1 `// MARK:` Comments
+### 8.1 `// MARK:` Comments
 ```swift
 // MARK: - Lifecycle
 // MARK: - Public
@@ -365,7 +815,7 @@ func launch(_ rocket: Rocket?) {
 // MARK: - UITableViewDataSource
 ```
 
-### 7.2 Protocol Conformances in Extensions
+### 8.2 Protocol Conformances in Extensions
 ```swift
 // MARK: - UITableViewDelegate
 extension MyViewController: UITableViewDelegate {
@@ -373,7 +823,7 @@ extension MyViewController: UITableViewDelegate {
 }
 ```
 
-### 7.3 Import Order
+### 8.3 Import Order
 Group and sort alphabetically: Swift stdlib → Apple frameworks → third-party → internal
 
 ```swift
@@ -388,15 +838,15 @@ import MyAppCore
 
 ---
 
-## 8. SwiftUI
+## 9. SwiftUI
 
-### 8.1 Keep `body` Simple
+### 9.1 Keep `body` Simple
 Extract sub-views or `@ViewBuilder` methods when `body` grows complex.
 
-### 8.2 Previews
+### 9.2 Previews
 Include a `#Preview` for every view. Use realistic data.
 
-### 8.3 Omit Redundant `EmptyView` Branches
+### 9.3 Omit Redundant `EmptyView` Branches
 An `if` statement without an `else` branch implicitly produces no content when the condition is false, so an explicit `else { EmptyView() }` is redundant and should be removed.
 
 **✅ Correct:**
@@ -421,7 +871,7 @@ var body: some View {
 
 *Enforced by:* SwiftFormat `redundantEmptyView` rule.
 
-### 8.4 Property Wrappers
+### 9.4 Property Wrappers
 
 | Wrapper | Use when |
 |---------|---------|
@@ -435,17 +885,15 @@ Do not use `@State` for data that outlives the view.
 
 ---
 
----
+## 10. Testing
 
-## 9. Testing
-
-### 9.1 Test Naming
+### 10.1 Test Naming
 Name tests so the failure message is self-explanatory:
 ```swift
 func test_launch_whenFuelIsEmpty_throwsError() { }
 ```
 
-### 9.2 Arrange-Act-Assert Structure
+### 10.2 Arrange-Act-Assert Structure
 ```swift
 func test_speed_afterBoost_isDoubled() {
   // Arrange
@@ -459,13 +907,13 @@ func test_speed_afterBoost_isDoubled() {
 }
 ```
 
-### 9.3 No Logic in Tests
+### 10.3 No Logic in Tests
 No `if`, `for`, or `switch` inside test methods. Use separate test methods or a data-driven approach.
 
-### 9.4 One Concept Per Test
+### 10.4 One Concept Per Test
 Multiple `XCTAssert` calls are fine as long as they all belong to the same behavior.
 
-### 9.5 Swift Testing: Raw Identifiers for Test Function Names
+### 10.5 Swift Testing: Raw Identifiers for Test Function Names
 When using Swift Testing, name test functions using **raw identifiers** (backtick-wrapped, space-separated words) instead of camelCase. Never put display names inside the `@Test` macro. Suite type names use regular UpperCamelCase.
 
 **✅ Correct:**
@@ -494,7 +942,7 @@ struct `Spaceship tests` { ... }
 
 *Requires:* Swift SE-0451 raw identifiers (available in Swift 6+).
 
-### 9.6 Swift Testing: Omit Redundant `@Suite` Macro
+### 10.6 Swift Testing: Omit Redundant `@Suite` Macro
 Do not annotate a test suite with `@Suite` unless you are passing arguments (e.g., `.serialized`). The macro with no arguments is redundant — `@Test` discovery works the same without it.
 
 **✅ Correct:**
@@ -521,7 +969,7 @@ struct SpaceshipTests {
 }
 ```
 
-### 9.7 Swift Testing: Avoid Redundant `#expect` Messages
+### 10.7 Swift Testing: Avoid Redundant `#expect` Messages
 Do not pass a message string to `#expect` when it merely restates the condition. The macro already generates detailed failure output. Only add a message when it provides genuinely new context; a code comment is often better.
 
 **✅ Correct:**
@@ -547,10 +995,10 @@ Do not pass a message string to `#expect` when it merely restates the condition.
 
 ---
 
-## 10. Tooling
+## 11. Tooling
 
 ### SwiftFormat
-Handles whitespace, indentation, trailing commas, redundant `self`, brace style.
+Handles whitespace, indentation, trailing commas, redundant `self`, brace style, and many style rules.
 ```bash
 brew install swiftformat
 swiftformat .
